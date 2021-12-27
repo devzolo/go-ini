@@ -27,12 +27,11 @@ type MagicIni struct {
 func LoadIni(path string) *MagicIni {
 	ini := new(MagicIni)
 	ini.Ini = make(map[string]map[string]string)
-	ini.LoadIni(path)
+	ini.loadIni(path)
 	return ini
 }
 
-func (ini *MagicIni) LoadIni(path string) {
-	fmt.Println(path)
+func (ini *MagicIni) loadIni(path string) {
 	f, err := os.Open(path)
 	if err != nil {
 		fmt.Printf("unable to read file: %v", err)
