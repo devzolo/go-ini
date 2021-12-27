@@ -5,19 +5,8 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"runtime"
 	"strings"
 )
-
-func getEOLForCurrentOS() string {
-	if runtime.GOOS == "windows" {
-		return "\r\n"
-	} else {
-		return "\n"
-	}
-}
-
-var EOL = getEOLForCurrentOS()
 
 type MagicIni struct {
 	Ini                  map[string]map[string]string
@@ -38,6 +27,7 @@ func (ini *MagicIni) loadIni(path string) {
 	}
 	defer f.Close()
 	buf := make([]byte, 1024)
+	source := ""
 	for {
 		n, err := f.Read(buf)
 		if err != nil && err != io.EOF {
@@ -46,12 +36,32 @@ func (ini *MagicIni) loadIni(path string) {
 		if n == 0 {
 			break
 		}
-		ini.Parse(string(buf))
+		source += string(buf[:n])
 	}
+	ini.Parse(source)
 }
 
-func (ini *MagicIni) Parse(buf string) {
-	lines := strings.Split(buf, EOL)
+func replaceLineScapes(s string) string {
+	s = strings.Replace(s, "+\r\n", "", -1)
+	s = strings.Replace(s, "+\n", "", -1)
+	return s
+}
+
+func breakLines(s string) []string {
+	var lines []string
+	for _, line := range strings.Split(s, "\n") {
+		if len(line) > 0 && line[len(line)-1] == '\r' {
+			line = line[:len(line)-1]
+		}
+		lines = append(lines, line)
+	}
+	return lines
+}
+
+func (ini *MagicIni) Parse(source string) {
+	buf := replaceLineScapes(source)
+	lines := breakLines(buf)
+
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if len(line) == 0 {
@@ -72,6 +82,8 @@ func trimSectionKey(s string) string {
 	s = strings.TrimSpace(s)
 	s = strings.TrimPrefix(s, "[")
 	s = strings.TrimSuffix(s, "]")
+	// s = strings.TrimSuffix(s, "\n")
+	// s = strings.TrimSuffix(s, "\r")
 	s = strings.TrimSpace(s)
 	return s
 }
@@ -91,8 +103,10 @@ func (ini *MagicIni) ParseSection(line string) {
 	if len(line) == 0 {
 		return
 	}
+	if ini.Ini[line] == nil {
+		ini.Ini[line] = make(map[string]string)
+	}
 	ini.currentParsedSection = line
-	ini.Ini[line] = make(map[string]string)
 }
 
 func (ini *MagicIni) ParseKeyValue(line string) {

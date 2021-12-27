@@ -22,3 +22,7 @@ yarn-error.log
 package-lock.json
 package.json
 node_modules
+
+
+Magic.ini
+MagicTest.ini
