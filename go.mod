@@ -1,3 +1,3 @@
 module github.com/devzolo/go-ini
 
-go 1.17
+go 1.18
