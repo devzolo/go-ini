@@ -26,18 +26,22 @@ go get github.com/devzolo/go-ini
 ### Basic Usage
 
 ```go
+package main
+
 import (
-    "github.com/devzolo/go-ini"
+  "fmt"
+
+  "github.com/devzolo/go-ini"
 )
 
 func main() {
-    ini := go_ini.NewMagicIni()
-    err := ini.LoadIni("path/to/your/magic.ini")
-    if err != nil {
-        panic(err)
-    }
-    value := ini.Get("SomeSection", "SomeKey")
-    fmt.Println(value)
+  cfg := ini.NewMagicIni()
+  err := cfg.LoadIni("path/to/your/magic.ini")
+  if err != nil {
+    panic(err)
+  }
+  value := cfg.Get("SomeSection", "SomeKey")
+  fmt.Println(value)
 }
 ```
 
